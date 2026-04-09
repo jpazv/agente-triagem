@@ -17,18 +17,18 @@ function parsearResposta(texto: string): { conversacional: string; triagem: Tria
   const conversacional = texto.slice(0, sepIdx).trim();
   const bloco = texto.slice(sepIdx);
 
-  const urgenciaMatch     = bloco.match(/Nível de urgência:\s*(BAIXA|MÉDIA|ALTA|MEDIA)/i);
+  const urgenciaMatch = bloco.match(/Nível de urgência:\s*(BAIXA|MÉDIA|ALTA|MEDIA)/i);
   const recomendacaoMatch = bloco.match(/Recomendação:\s*(.+)/i);
-  const motivoMatch       = bloco.match(/Motivo:\s*(.+)/i);
+  const motivoMatch = bloco.match(/Motivo:\s*(.+)/i);
 
   if (!urgenciaMatch) return { conversacional: texto.trim(), triagem: null };
 
   return {
     conversacional,
     triagem: {
-      urgencia:     urgenciaMatch[1].toUpperCase().replace("MEDIA", "MÉDIA") as Urgencia,
+      urgencia: urgenciaMatch[1].toUpperCase().replace("MEDIA", "MÉDIA") as Urgencia,
       recomendacao: recomendacaoMatch?.[1]?.trim() ?? "",
-      motivo:       motivoMatch?.[1]?.trim()       ?? "",
+      motivo: motivoMatch?.[1]?.trim() ?? "",
     },
   };
 }
@@ -57,12 +57,18 @@ export async function POST(request: NextRequest) {
         ? protocolos.map((p: { titulo: string; conteudo: string }) => `## ${p.titulo}\n${p.conteudo}`).join("\n\n")
         : "Nenhum protocolo específico encontrado. Use conhecimento geral de fisioterapia.";
 
+    // Busca histórico
     const { data: historico } = await db
       .from("conversas")
       .select("role, conteudo")
       .eq("sessao_id", sessao_id)
       .order("criado_em", { ascending: true })
       .limit(20);
+
+    // Salva mensagem do usuário ANTES de chamar o Groq
+    await db.from("conversas").insert([
+      { sessao_id, role: "user", conteudo: mensagem },
+    ]);
 
     const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
       { role: "system", content: SYSTEM_PROMPT },
@@ -99,8 +105,6 @@ export async function POST(request: NextRequest) {
 
             fullContent += token;
 
-            // Envia apenas a parte conversacional (antes do bloco ---)
-            // O cliente vai acumulando e quando chegar o "done", renderiza o card
             const jaTemSeparador = fullContent.includes("---");
             if (!jaTemSeparador) {
               controller.enqueue(
@@ -109,11 +113,10 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Stream concluído — parseia e salva
+          // Stream concluído — parseia e salva só o assistant
           const { conversacional, triagem } = parsearResposta(fullContent);
 
           await db.from("conversas").insert([
-            { sessao_id, role: "user",      conteudo: mensagem },
             { sessao_id, role: "assistant", conteudo: fullContent },
           ]);
 
@@ -135,9 +138,9 @@ export async function POST(request: NextRequest) {
 
     return new Response(readable, {
       headers: {
-        "Content-Type":  "text/event-stream",
+        "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
-        "Connection":    "keep-alive",
+        "Connection": "keep-alive",
       },
     });
   } catch (err) {
