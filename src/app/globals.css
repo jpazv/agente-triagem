@@ -12,15 +12,66 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* ─── Blob / Mesh Gradient ──────────────────────────────────────────────── */
+@keyframes blob {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(40px, -30px) scale(1.08); }
+  66%       { transform: translate(-25px, 25px) scale(0.93); }
+}
+
+.animate-blob {
+  animation: blob 10s ease-in-out infinite;
+}
+.animation-delay-2000 { animation-delay: 2s; }
+.animation-delay-4000 { animation-delay: 4s; }
+
+/* ─── Shimmer on CTA button ─────────────────────────────────────────────── */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.btn-shimmer {
+  background: linear-gradient(90deg, #f47920 35%, #ff9f50 50%, #f47920 65%);
+  background-size: 200% auto;
+  animation: shimmer 2.5s linear infinite;
+}
+
+/* ─── Floating button animated gradient ────────────────────────────────── */
+@keyframes grad-rotate {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+
+.btn-grad {
+  background: linear-gradient(135deg, #134F47, #1a7a6e, #f47920, #134F47);
+  background-size: 300% 300%;
+  animation: grad-rotate 4s ease infinite;
+}
+
+/* ─── Connector line draw ───────────────────────────────────────────────── */
+@keyframes draw-line {
+  from { width: 0; }
+  to   { width: 100%; }
+}
+
+/* ─── Skeleton glow pulse ───────────────────────────────────────────────── */
+@keyframes skeleton-glow {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(239,68,68,0.3)) brightness(1.1); }
+  50%       { filter: drop-shadow(0 0 20px rgba(239,68,68,0.6)) brightness(1.25); }
+}
+
+.skeleton-glow {
+  animation: skeleton-glow 3s ease-in-out infinite;
 }

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "WebFetch(domain:www.itcvertebral.com.br)",
+      "WebFetch(domain:www.grupovelas.com.br)",
+      "Bash(npx tsc:*)"
+    ]
+  }
+}
