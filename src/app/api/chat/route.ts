@@ -70,8 +70,12 @@ export async function POST(request: NextRequest) {
       { sessao_id, role: "user", conteudo: mensagem },
     ]);
 
+    // Protocolos vão no system prompt — mensagem do usuário fica limpa
     const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
-      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "system",
+        content: `${SYSTEM_PROMPT}\n\n[PROTOCOLOS CLÍNICOS DISPONÍVEIS]\n${contextoProtocolos}`,
+      },
     ];
 
     if (historico) {
@@ -80,9 +84,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Mensagem do usuário limpa
     messages.push({
       role: "user",
-      content: `[PROTOCOLOS CLÍNICOS RELEVANTES]\n${contextoProtocolos}\n\n[MENSAGEM DO PACIENTE]\n${mensagem}`,
+      content: mensagem,
     });
 
     // Streaming da resposta do Groq via SSE
