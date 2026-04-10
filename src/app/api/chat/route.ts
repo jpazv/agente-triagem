@@ -44,7 +44,6 @@ export async function POST(request: NextRequest) {
 
     const db = createServiceClient();
 
-    // RAG: busca protocolos relevantes
     const { data: protocolos } = await db.rpc("match_protocolos", {
       query_text: mensagem,
       match_count: 3,
@@ -57,7 +56,6 @@ export async function POST(request: NextRequest) {
         ? protocolos.map((p: { titulo: string; conteudo: string }) => `## ${p.titulo}\n${p.conteudo}`).join("\n\n")
         : "Nenhum protocolo específico encontrado. Use conhecimento geral de fisioterapia.";
 
-    // Busca histórico
     const { data: historico } = await db
       .from("conversas")
       .select("role, conteudo")
@@ -65,12 +63,10 @@ export async function POST(request: NextRequest) {
       .order("criado_em", { ascending: true })
       .limit(20);
 
-    // Salva mensagem do usuário ANTES de chamar o Groq
     await db.from("conversas").insert([
       { sessao_id, role: "user", conteudo: mensagem },
     ]);
 
-    // Protocolos vão no system prompt — mensagem do usuário fica limpa
     const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
       {
         role: "system",
@@ -84,13 +80,11 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Mensagem do usuário limpa
     messages.push({
       role: "user",
       content: mensagem,
     });
 
-    // Streaming da resposta do Groq via SSE
     const groqStream = await groq.chat.completions.create({
       model: GROQ_MODEL,
       messages,
@@ -118,7 +112,6 @@ export async function POST(request: NextRequest) {
             }
           }
 
-          // Stream concluído — parseia e salva só o assistant
           const { conversacional, triagem } = parsearResposta(fullContent);
 
           await db.from("conversas").insert([
