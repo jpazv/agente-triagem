@@ -37,7 +37,7 @@ interface Mensagem {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const COR_VERDE   = "#134F47";
+const COR_VERDE = "#134F47";
 const COR_LARANJA = "#f47920";
 
 const REGEX_AGENDAMENTO = /Consulta agendada para (.+?) no dia (.+?) à (.+?)\. Até lá/i;
@@ -82,18 +82,20 @@ function detectarAgendamento(texto: string): AgendamentoInfo | null {
 function LogoAlivia({ dark = false, size = "md" }: { dark?: boolean; size?: "sm" | "md" | "lg" }) {
   const c = dark ? "white" : COR_VERDE;
   const sub = dark ? "rgba(255,255,255,0.35)" : "rgba(19,79,71,0.45)";
-  const sizes = { sm: { mark: "w-4 h-6", name: "text-base", tag: "text-[8px]" },
-                  md: { mark: "w-5 h-8", name: "text-xl",   tag: "text-[9px]" },
-                  lg: { mark: "w-8 h-12", name: "text-3xl",  tag: "text-[11px]" } };
+  const sizes = {
+    sm: { mark: "w-4 h-6", name: "text-base", tag: "text-[8px]" },
+    md: { mark: "w-5 h-8", name: "text-xl", tag: "text-[9px]" },
+    lg: { mark: "w-8 h-12", name: "text-3xl", tag: "text-[11px]" }
+  };
   const s = sizes[size];
 
   return (
     <div className="flex items-center gap-2.5 select-none">
       {/* Vertebrae mark */}
       <svg viewBox="0 0 24 38" className={`${s.mark} flex-shrink-0`} fill="none">
-        <rect x="5"  y="0"  width="14" height="8" rx="2.5" fill={c} opacity="0.65" />
-        <rect x="2"  y="11" width="20" height="8" rx="2.5" fill={c} />
-        <rect x="5"  y="22" width="14" height="8" rx="2.5" fill={c} opacity="0.65" />
+        <rect x="5" y="0" width="14" height="8" rx="2.5" fill={c} opacity="0.65" />
+        <rect x="2" y="11" width="20" height="8" rx="2.5" fill={c} />
+        <rect x="5" y="22" width="14" height="8" rx="2.5" fill={c} opacity="0.65" />
         <line x1="12" y1="8" x2="12" y2="11" stroke={sub} strokeWidth="1.5" />
         <line x1="12" y1="19" x2="12" y2="22" stroke={sub} strokeWidth="1.5" />
         <circle cx="12" cy="34" r="2.5" fill={c} opacity="0.4" />
@@ -131,9 +133,8 @@ function ScrollDownButton({ targetId, label, dark = false }: {
       <motion.div
         animate={{ y: [0, 6, 0] }}
         transition={{ repeat: Infinity, duration: 1.6, ease: "easeInOut" }}
-        className={`w-8 h-8 rounded-full border flex items-center justify-center group-hover:scale-110 transition-transform ${
-          dark ? "border-white/20 group-hover:border-white/50" : "border-gray-200 group-hover:border-gray-400"
-        }`}
+        className={`w-8 h-8 rounded-full border flex items-center justify-center group-hover:scale-110 transition-transform ${dark ? "border-white/20 group-hover:border-white/50" : "border-gray-200 group-hover:border-gray-400"
+          }`}
       >
         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -147,16 +148,16 @@ function ScrollDownButton({ targetId, label, dark = false }: {
 
 function AnimatedCounter({ to, suffix = "" }: { to: number; suffix?: string }) {
   const nodeRef = useRef<HTMLSpanElement>(null);
-  const inView  = useInView(nodeRef, { once: true, margin: "-60px" });
+  const inView = useInView(nodeRef, { once: true, margin: "-60px" });
 
   useEffect(() => {
     const node = nodeRef.current;
     if (!inView || !node) return;
     const duration = 1600;
-    const start    = performance.now();
+    const start = performance.now();
     function tick(now: number) {
       const progress = Math.min((now - start) / duration, 1);
-      const eased    = 1 - Math.pow(1 - progress, 3);
+      const eased = 1 - Math.pow(1 - progress, 3);
       if (node) node.textContent = Math.round(eased * to) + suffix;
       if (progress < 1) requestAnimationFrame(tick);
     }
@@ -254,13 +255,13 @@ function TypingIndicator() {
 // ─── Painel Chat ──────────────────────────────────────────────────────────────
 
 function PainelChat({ onFechar }: { onFechar: () => void }) {
-  const [mensagens, setMensagens]         = useState<Mensagem[]>([]);
-  const [input, setInput]                 = useState("");
-  const [carregando, setCarregando]       = useState(false);
+  const [mensagens, setMensagens] = useState<Mensagem[]>([]);
+  const [input, setInput] = useState("");
+  const [carregando, setCarregando] = useState(false);
   const [streamingContent, setStreamingContent] = useState("");
   const [sessaoId] = useState(() => crypto.randomUUID());
-  const bottomRef  = useRef<HTMLDivElement>(null);
-  const inputRef   = useRef<HTMLTextAreaElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -288,9 +289,9 @@ function PainelChat({ onFechar }: { onFechar: () => void }) {
 
       if (!res.ok || !res.body) throw new Error();
 
-      const reader  = res.body.getReader();
+      const reader = res.body.getReader();
       const decoder = new TextDecoder();
-      let buffer    = "";
+      let buffer = "";
       let streaming = "";
 
       while (true) {
@@ -316,14 +317,14 @@ function PainelChat({ onFechar }: { onFechar: () => void }) {
               setStreamingContent(streaming);
             } else if (event.type === "done") {
               const conversacional = event.conversacional ?? "";
-              const agendamento    = detectarAgendamento(conversacional);
+              const agendamento = detectarAgendamento(conversacional);
               setMensagens((prev) => [...prev, {
-                role:        "assistant",
-                conteudo:    conversacional,
-                urgencia:    event.triagem?.urgencia ?? null,
+                role: "assistant",
+                conteudo: conversacional,
+                urgencia: event.triagem?.urgencia ?? null,
                 agendamento: agendamento ?? undefined,
-                triagem:     event.triagem,
-                protocolos:  event.protocolos?.length ? event.protocolos : undefined,
+                triagem: event.triagem,
+                protocolos: event.protocolos?.length ? event.protocolos : undefined,
               }]);
               setStreamingContent("");
             }
@@ -341,7 +342,7 @@ function PainelChat({ onFechar }: { onFechar: () => void }) {
 
   const ATALHOS_RAPIDOS = [
     { icon: "🩺", texto: "Fazer triagem de sintomas", msg: "Quero fazer uma triagem de sintomas" },
-    { icon: "📅", texto: "Agendar consulta",          msg: "Quero agendar uma consulta" },
+    { icon: "📅", texto: "Agendar consulta", msg: "Quero agendar uma consulta" },
   ];
 
   return (
@@ -418,7 +419,14 @@ function PainelChat({ onFechar }: { onFechar: () => void }) {
                 <div className={`px-3.5 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm
                   ${msg.role === "user" ? "text-white rounded-tr-sm" : "bg-white text-gray-800 rounded-tl-sm border border-gray-100"}`}
                   style={msg.role === "user" ? { background: COR_VERDE } : {}}>
-                  {msg.conteudo}
+                  {msg.conteudo}{msg.role === "assistant" && !msg.triagem && msg.protocolos && msg.protocolos.length > 0 && (
+                    <div className="flex items-center gap-1 text-xs text-gray-400 px-1 flex-wrap">
+                      <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      <span>Baseado em: {msg.protocolos.join(" • ")}</span>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -593,11 +601,10 @@ function LandingPage({ onAbrirChat }: { onAbrirChat: () => void }) {
     <div className="bg-white">
 
       {/* ── Nav ── */}
-      <header className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${
-        scrolled
+      <header className={`fixed top-0 left-0 right-0 z-30 transition-all duration-300 ${scrolled
           ? "bg-white/95 backdrop-blur-md shadow-sm border-b border-gray-100"
           : "bg-transparent border-b border-white/10"
-      }`}>
+        }`}>
         <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
           <LogoAlivia dark={!scrolled} />
           <nav className="hidden md:flex items-center gap-8">
@@ -611,9 +618,8 @@ function LandingPage({ onAbrirChat }: { onAbrirChat: () => void }) {
                   whileTap={{ scale: 0.93 }}
                   animate={activeNav === id ? { scale: [1, 0.9, 1.04, 1] } : {}}
                   transition={{ duration: 0.35 }}
-                  className={`text-sm font-medium transition-colors relative ${
-                    scrolled ? "text-gray-600 hover:text-gray-900" : "text-white/75 hover:text-white"
-                  }`}
+                  className={`text-sm font-medium transition-colors relative ${scrolled ? "text-gray-600 hover:text-gray-900" : "text-white/75 hover:text-white"
+                    }`}
                 >
                   {item}
                   {activeNav === id && (
@@ -681,16 +687,16 @@ function LandingPage({ onAbrirChat }: { onAbrirChat: () => void }) {
             {/* Social proof strip */}
             <div className="flex items-center gap-3 bg-white/8 rounded-2xl px-4 py-3 backdrop-blur-sm border border-white/10">
               <div className="flex -space-x-2">
-                {["#e8f5e9","#c8e6c9","#a5d6a7","#81c784"].map((bg, i) => (
+                {["#e8f5e9", "#c8e6c9", "#a5d6a7", "#81c784"].map((bg, i) => (
                   <div key={i} className="w-7 h-7 rounded-full border-2 border-white/30 flex items-center justify-center text-[10px] font-bold text-white"
                     style={{ background: bg, color: COR_VERDE }}>
-                    {["P","M","J","A"][i]}
+                    {["P", "M", "J", "A"][i]}
                   </div>
                 ))}
               </div>
               <div>
                 <div className="flex items-center gap-1">
-                  {[1,2,3,4,5].map(s => <span key={s} className="text-yellow-400 text-xs">★</span>)}
+                  {[1, 2, 3, 4, 5].map(s => <span key={s} className="text-yellow-400 text-xs">★</span>)}
                   <span className="text-white font-semibold text-xs ml-1">4.9</span>
                 </div>
                 <p className="text-white/60 text-[11px]">+115 mil pacientes atendidos</p>
@@ -781,22 +787,28 @@ function LandingPage({ onAbrirChat }: { onAbrirChat: () => void }) {
       <section id="stats-section" className="py-16 border-b border-gray-100" style={{ background: "linear-gradient(to right, #f8faf9, white, #f8faf9)" }}>
         <div ref={statsRef} className="max-w-4xl mx-auto px-6 grid grid-cols-3 gap-8 text-center">
           {[
-            { valor: 115, suffix: "k+", label: "Pacientes atendidos", icon: (
-              <svg className="w-6 h-6 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: COR_VERDE }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            )},
-            { valor: 80, suffix: "+", label: "Unidades no Brasil", icon: (
-              <svg className="w-6 h-6 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: COR_VERDE }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            )},
-            { valor: 20, suffix: "+", label: "Anos de experiência", icon: (
-              <svg className="w-6 h-6 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: COR_VERDE }}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
-              </svg>
-            )},
+            {
+              valor: 115, suffix: "k+", label: "Pacientes atendidos", icon: (
+                <svg className="w-6 h-6 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: COR_VERDE }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              )
+            },
+            {
+              valor: 80, suffix: "+", label: "Unidades no Brasil", icon: (
+                <svg className="w-6 h-6 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: COR_VERDE }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+              )
+            },
+            {
+              valor: 20, suffix: "+", label: "Anos de experiência", icon: (
+                <svg className="w-6 h-6 mx-auto mb-3" fill="none" stroke="currentColor" strokeWidth={1.5} viewBox="0 0 24 24" style={{ color: COR_VERDE }}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z" />
+                </svg>
+              )
+            },
           ].map((s, i) => (
             <motion.div
               key={s.label}
